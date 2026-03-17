@@ -8,4 +8,4 @@ use
 
 ```flutter run --dart-define=BYPASS_OTP=true``` 
 
-for bypassing otp verification for testing
+for bypassing otp verification for testing and put otp as 0000.
