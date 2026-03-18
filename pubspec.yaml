@@ -54,6 +54,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.7
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -100,3 +102,22 @@ flutter:
 
 dependency_overrides:
   latlong2: 0.9.1
+
+  # --- APP ICON GENERATOR ---
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/odogo_logo_without_bg.png"
+  min_sdk_android: 21
+
+# --- SPLASH SCREEN GENERATOR ---
+flutter_native_splash:
+  color: "#ffffff" # Sets the loading screen background to solid white
+  image: "assets/images/odogo_logo_without_bg.png"
+  android: true
+  ios: true
+  
+  # For Android 12+, we need this specific branding
+  android_12:
+    image: "assets/images/odogo_logo_without_bg.png"
+    color: "#ffffff"

@@ -84,7 +84,7 @@ const List<DropoffLocation> iitkDropoffLocations = <DropoffLocation>[
   DropoffLocation(name: 'Old Shopping Complex', latitude: 26.5114, longitude: 80.2364, aliases: <String>['old', 'shop', 'restaurant', 'sbi', 'd shop', 'mama mio', 'tarun bookstore', 'dry cleaner', 'divyam', 'tadka']),
   DropoffLocation(name: 'Post Office', latitude: 26.5120, longitude: 80.2365, aliases: <String>['psot office', 'post', 'office']),
   DropoffLocation(name: 'Main Auditorium', latitude: 26.5131, longitude: 80.2359, aliases: <String>['audi', 'auditorium', 'main audi', 'main auditorium', 'church']),
-  DropoffLocation(name: 'Institute Nursery', latitude: 26.5152, longitude: 80.2352 , aliases: <String>['nursery', 'garden']),
+  DropoffLocation(name: 'Institute Nursery', latitude: 26.5152, longitude: 80.2352 , aliases: <String>['nursery', 'garden', 'flowers']),
   DropoffLocation(name: 'Swimming Pool', latitude: 26.5052, longitude: 80.2312, aliases: <String>['swimming', 'pool']),
   DropoffLocation(name: 'Old Sports Complex', latitude: 26.5085, longitude: 80.2313, aliases: <String>['sports', 'complex', 'old sports complex']),
 ];
