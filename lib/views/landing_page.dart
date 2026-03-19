@@ -54,7 +54,7 @@ class _LandingPageState extends State<LandingPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: ElevatedButton(
                   onPressed: () {
-                    context.push(
+                    context.go(
                       '/sign-in',
                       extra: {'isDriver': isDriverView, 'isSignUp': false},
                     );
@@ -77,7 +77,7 @@ class _LandingPageState extends State<LandingPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: ElevatedButton(
                   onPressed: () {
-                    context.push(
+                    context.go(
                       '/sign-in',
                       extra: {'isDriver': isDriverView, 'isSignUp': true},
                     );

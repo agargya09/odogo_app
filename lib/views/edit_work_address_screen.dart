@@ -185,8 +185,7 @@ class _EditWorkAddressScreenState extends ConsumerState<EditWorkAddressScreen> {
             return Padding(
               padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom), 
               child: Container(
-                // 2. THE MAGIC BLACK BANNER: When the sheet hits the camera, 
-                // SafeArea reveals this black background behind the notch!
+                // 2. THE MAGIC BLACK BANNER
                 decoration: const BoxDecoration(
                   color: Colors.black, 
                   borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -213,7 +212,7 @@ class _EditWorkAddressScreenState extends ConsumerState<EditWorkAddressScreen> {
                           child: TextField(
                             autofocus: true,
                             decoration: InputDecoration(
-                              hintText: 'Search or type custom address...',
+                              hintText: 'Search campus address...',
                               prefixIcon: const Icon(Icons.search, color: Colors.black54),
                               filled: true,
                               fillColor: Colors.grey[200],
@@ -226,11 +225,16 @@ class _EditWorkAddressScreenState extends ConsumerState<EditWorkAddressScreen> {
                           ),
                         ),
                         
+                        // REMOVED custom string input tile here. Added "No Results" message.
                         if (localSearchText.isNotEmpty && sheetFiltered.isEmpty)
-                          ListTile(
-                            leading: const Icon(Icons.edit_location_alt, color: Colors.black),
-                            title: Text('Set address as "$localSearchText"', style: const TextStyle(fontWeight: FontWeight.bold)),
-                            onTap: () => Navigator.pop(sheetContext, localSearchText), 
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            child: Center(
+                              child: Text(
+                                'No locations found matching "$localSearchText"',
+                                style: const TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+                              ),
+                            ),
                           ),
 
                         const Divider(height: 1),

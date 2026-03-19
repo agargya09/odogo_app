@@ -216,7 +216,7 @@ class _HomeAddressEditScreenState extends ConsumerState<HomeAddressEditScreen> {
                           child: TextField(
                             autofocus: true,
                             decoration: InputDecoration(
-                              hintText: 'Search hostel, hall, or custom address...',
+                              hintText: 'Search hostel or hall...', // Updated hint text
                               prefixIcon: const Icon(Icons.search, color: Colors.black54),
                               filled: true,
                               fillColor: Colors.grey[200],
@@ -229,11 +229,16 @@ class _HomeAddressEditScreenState extends ConsumerState<HomeAddressEditScreen> {
                           ),
                         ),
                         
+                        // REMOVED custom string input tile here. Added "No Results" message.
                         if (localSearchText.isNotEmpty && sheetFiltered.isEmpty)
-                          ListTile(
-                            leading: const Icon(Icons.edit_location_alt, color: Colors.black),
-                            title: Text('Set address as "$localSearchText"', style: const TextStyle(fontWeight: FontWeight.bold)),
-                            onTap: () => Navigator.pop(sheetContext, localSearchText), 
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            child: Center(
+                              child: Text(
+                                'No locations found matching "$localSearchText"',
+                                style: const TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+                              ),
+                            ),
                           ),
 
                         const Divider(height: 1),

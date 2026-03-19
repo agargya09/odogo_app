@@ -1,114 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:go_router/go_router.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import '../controllers/auth_controller.dart';
-// import '../models/enums.dart'; // Make sure this path is correct for UserRole!
-
-// import '../views/landing_page.dart';
-// import '../views/sign_in_page.dart';
-// import '../views/otp_page.dart';
-// import '../views/sign_up_page.dart';
-// import '../views/commuter_home.dart';
-// import '../views/driver_home_screen.dart';
-
-// final routerProvider = Provider<GoRouter>((ref) {
-//   // 1. Create a ValueNotifier to bridge Riverpod and GoRouter
-//   final routerNotifier = ValueNotifier<AuthState>(
-//     ref.read(authControllerProvider),
-//   );
-
-//   // 2. Listen to the auth state and safely update the notifier
-//   ref.listen<AuthState>(authControllerProvider, (previous, next) {
-//     routerNotifier.value = next;
-//   });
-
-//   // 3. Clean up the notifier if the provider is ever destroyed
-//   ref.onDispose(() {
-//     routerNotifier.dispose();
-//   });
-
-//   // 4. Return GoRouter ONLY ONCE. Never rebuild it!
-//   return GoRouter(
-//     initialLocation: '/login',
-//     refreshListenable:
-//         routerNotifier, // Tells GoRouter to re-run the redirect when state changes
-
-//     redirect: (context, state) {
-//       // ALWAYS read the current state here instead of watching it outside
-//       final authState = ref.read(authControllerProvider);
-//       final path = state.uri.path;
-
-//       final isAuthRoute =
-//           path == '/login' || path == '/sign-in' || path == '/otp';
-
-//       // If checking the hard drive or verifying an OTP, don't interrupt the user
-//       if (authState is AuthLoading) return null;
-
-//       // Unauthenticated users get kicked to /login ONLY if they try to go somewhere else
-//       if (authState is AuthInitial ||
-//           authState is AuthError ||
-//           authState is AuthOtpSent) {
-//         return isAuthRoute ? null : '/login';
-//       }
-
-//       // If Authenticated, seamlessly route them to their specific home screen
-//       if (authState is AuthAuthenticated) {
-//         if (isAuthRoute) {
-//           return authState.user.role == UserRole.driver
-//               ? '/driver-home'
-//               : '/commuter-home';
-//         }
-//       }
-
-//       // Prevent infinite redirect loop on the setup page
-//       if (authState is AuthNeedsProfileSetup) {
-//         return path == '/setup' ? null : '/setup';
-//       }
-
-//       return null;
-//     },
-
-//     routes: [
-//       GoRoute(path: '/login', builder: (context, state) => const LandingPage()),
-//       GoRoute(
-//         path: '/sign-in',
-//         builder: (context, state) {
-//           final args = state.extra as Map<String, dynamic>? ?? {};
-//           return SignInPage(
-//             isDriver: args['isDriver'] ?? false,
-//             isSignUp: args['isSignUp'] ?? false,
-//           );
-//         },
-//       ),
-//       GoRoute(
-//         path: '/otp',
-//         builder: (context, state) {
-//           final args = state.extra as Map<String, dynamic>? ?? {};
-//           return OtpPage(
-//             isDriver: args['isDriver'] ?? false,
-//             isSignUp: args['isSignUp'] ?? false,
-//             email: args['email'] ?? '',
-//           );
-//         },
-//       ),
-//       GoRoute(
-//         path: '/commuter-home',
-//         builder: (context, state) => const CommuterHomeScreen(),
-//       ),
-//       GoRoute(
-//         path: '/driver-home',
-//         builder: (context, state) => const DriverHomeScreen(),
-//       ),
-//       GoRoute(
-//         path: '/setup',
-//         builder: (context, state) {
-//           final isDriver = state.extra as bool? ?? false;
-//           return SignUpPage(isDriver: isDriver);
-//         },
-//       ),
-//     ],
-//   );
-// });
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -141,94 +30,55 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/splash',
     refreshListenable: routerNotifier,
 
-    // redirect: (context, state) {
-    //   final authState = ref.read(authControllerProvider);
-    //   final path = state.uri.path;
-
-    //   // 1. If loading, ALWAYS force the splash screen (unless already there)
-    //   if (authState is AuthLoading) {
-    //     return path == '/splash' ? null : '/splash';
-    //   }
-
-    //   // 2. These are the ONLY screens an unauthenticated user is allowed to see
-    //   // Notice: /splash is NO LONGER in this list!
-    //   final isUnauthRoute =
-    //       path == '/login' || path == '/sign-in' || path == '/otp';
-
-    //   // 3. Handle Unauthenticated users (Fresh app or Logged out)
-    //   if (authState is AuthInitial ||
-    //       authState is AuthError ||
-    //       authState is AuthOtpSent) {
-    //     // If they are on the splash screen (or anywhere else), kick them to login
-    //     return isUnauthRoute ? null : '/login';
-    //   }
-
-    //   // 4. Handle Authenticated users
-    //   if (authState is AuthAuthenticated) {
-    //     // If they are on an unauth screen, splash screen, or setup, send them Home
-    //     if (isUnauthRoute || path == '/splash' || path == '/setup') {
-    //       return authState.user.role == UserRole.driver
-    //           ? '/driver-home'
-    //           : '/commuter-home';
-    //     }
-    //   }
-
-    //   // 5. Handle users who need to finish registration
-    //   if (authState is AuthNeedsProfileSetup) {
-    //     return path == '/setup' ? null : '/setup';
-    //   }
-
-    //   return null;
-    // },
     redirect: (context, state) {
       final authState = ref.read(authControllerProvider);
       final path = state.uri.path;
 
+      // 1. If Loading, freeze routing entirely.
       if (authState is AuthLoading) {
-        return path == '/splash' ? null : '/splash';
+        return null;
       }
 
+      // 2. THE FIX: Use .startsWith() to prevent hidden trailing slashes from breaking the route.
       final isUnauthRoute =
-          path == '/login' ||
-          path == '/sign-in' ||
-          path == '/otp' ||
-          path == '/account-not-found';
+          path.startsWith('/login') ||
+          path.startsWith('/sign-in') ||
+          path.startsWith('/otp') ||
+          path.startsWith('/account-not-found');
 
+      // 3. Handle Logged-Out Users (BRUTE FORCE BYPASS)
       if (authState is AuthInitial ||
           authState is AuthError ||
           authState is AuthOtpSent) {
-        return isUnauthRoute ? null : '/login';
+        
+        if (path.startsWith('/splash')) return '/login'; 
+        
+        // If they are going to ANY unauth route (like /otp), DO NOT INTERFERE.
+        if (isUnauthRoute) return null; 
+        
+        return '/login'; 
       }
 
-      // --- THE UPDATED AUTHENTICATED LOGIC ---
+      // 4. Handle Logged-In Users
       if (authState is AuthAuthenticated) {
         final user = authState.user;
         final isDriver = user.role == UserRole.driver;
 
-        // Keep user on OTP briefly so OTP screen can show role-mismatch snackbar.
-        if (path == '/otp') {
-          return null;
-        }
+        if (path.startsWith('/otp')) return null;
 
-        // Check if a driver still needs to upload documents (e.g., vehicle data is null)
         final needsDocs = isDriver && user.vehicle == null;
-
         if (needsDocs) {
-          // Trap them on the docs screen until they submit
-          return path == '/driver-docs' ? null : '/driver-docs';
+          return path.startsWith('/driver-docs') ? null : '/driver-docs';
         }
 
-        // If they don't need docs, route them home seamlessly
-        if (isUnauthRoute ||
-            path == '/splash' ||
-            path == '/setup' ||
-            path == '/driver-docs') {
+        if (isUnauthRoute || path.startsWith('/splash') || path.startsWith('/setup') || path.startsWith('/driver-docs')) {
           return isDriver ? '/driver-home' : '/commuter-home';
         }
       }
 
+      // 5. Handle Setup
       if (authState is AuthNeedsProfileSetup) {
-        return (path == '/setup' || path == '/account-not-found')
+        return (path.startsWith('/setup') || path.startsWith('/account-not-found'))
             ? null
             : '/account-not-found';
       }
@@ -237,7 +87,6 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
 
     routes: [
-      // A clean Splash Screen for loading states
       GoRoute(
         path: '/splash',
         builder: (context, state) => const Scaffold(

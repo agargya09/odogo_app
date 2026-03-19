@@ -10,6 +10,7 @@ import 'bookings_screen.dart';
 import 'profile_screen.dart';
 import 'trip_confirmation_screen.dart';
 import 'schedule_booking_screen.dart';
+import 'location_permission_screen.dart'; 
 
 class CommuterHomeScreen extends ConsumerStatefulWidget {
   const CommuterHomeScreen({super.key});
@@ -75,10 +76,12 @@ class _MapHomeViewState extends ConsumerState<_MapHomeView> with WidgetsBindingO
   final GlobalKey _bottomOverlayKey = GlobalKey();
   double _bottomOverlayHeight = 0;
   
-  // Pickup State Variables
   bool _useCurrentLocationAsPickup = true;
   DropoffLocation? _selectedPickupLocation;
   String? _customPickupName; 
+  
+  bool _isShowingPermissionScreen = false; 
+  bool _isCheckingPermission = false; 
 
   double get _verticalCenterOffsetPx {
     return (_bottomOverlayHeight + _bottomOverlayInset) / 2;
@@ -88,7 +91,7 @@ class _MapHomeViewState extends ConsumerState<_MapHomeView> with WidgetsBindingO
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this); 
-    _enforceLocationPermission();
+    _verifyLocationAccess(); 
   }
 
   @override
@@ -102,75 +105,50 @@ class _MapHomeViewState extends ConsumerState<_MapHomeView> with WidgetsBindingO
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _enforceLocationPermission(); 
+      _verifyLocationAccess(); 
     }
   }
 
-  Future<void> _enforceLocationPermission() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  Future<void> _verifyLocationAccess() async {
+    if (_isShowingPermissionScreen || _isCheckingPermission) return;
     
-    if (!serviceEnabled) {
-      await _showBlockingDialog(
-        title: 'GPS is Disabled',
-        message: 'OdoGo requires GPS to find rides. Please turn on your location services.',
-        buttonText: 'Open Settings',
-        onAction: () => Geolocator.openLocationSettings(),
-      );
-      return; 
-    }
+    _isCheckingPermission = true; 
 
-    LocationPermission permission = await Geolocator.checkPermission();
-    
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      LocationPermission permission = await Geolocator.checkPermission();
+
       if (permission == LocationPermission.denied) {
-        await _showBlockingDialog(
-          title: 'Location Required',
-          message: 'We absolutely need your location to connect you with drivers. Please allow access.',
-          buttonText: 'Try Again',
-          onAction: () => _enforceLocationPermission(),
-        );
-        return;
+        permission = await Geolocator.requestPermission();
       }
+
+      if (!serviceEnabled || permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+        if (!mounted) return;
+        _isShowingPermissionScreen = true;
+        _locationSubscription?.cancel();
+        
+        await Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const LocationPermissionScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child); 
+            },
+          ),
+        );
+        
+        _isShowingPermissionScreen = false;
+        
+        permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+          _startLocationStream();
+        }
+      } else {
+        _startLocationStream();
+      }
+    } finally {
+      _isCheckingPermission = false; 
     }
-
-    if (permission == LocationPermission.deniedForever) {
-      await _showBlockingDialog(
-        title: 'Permission Denied',
-        message: 'You have permanently denied location access. You must open your phone settings, find OdoGo, and allow location access to use the app.',
-        buttonText: 'Open App Settings',
-        onAction: () => Geolocator.openAppSettings(),
-      );
-      return;
-    }
-
-    _startLocationStream();
-  }
-
-  Future<void> _showBlockingDialog({required String title, required String message, required String buttonText, required VoidCallback onAction}) async {
-    if (!mounted) return;
-    await showDialog(
-      context: context,
-      barrierDismissible: false, 
-      builder: (context) => PopScope(
-        canPop: false, 
-        child: AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          content: Text(message),
-          actions: [
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF66D2A3), foregroundColor: Colors.black),
-              onPressed: () {
-                Navigator.pop(context); 
-                onAction(); 
-              },
-              child: Text(buttonText, style: const TextStyle(fontWeight: FontWeight.bold)),
-            )
-          ],
-        ),
-      ),
-    );
   }
 
   Future<void> _startLocationStream() async {
@@ -203,10 +181,14 @@ class _MapHomeViewState extends ConsumerState<_MapHomeView> with WidgetsBindingO
     _lastRecenterLocation = location;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _mapController.move(location, _mapController.camera.zoom, offset: Offset(0, -_verticalCenterOffsetPx));
+      try {
+        _mapController.move(location, _mapController.camera.zoom, offset: Offset(0, -_verticalCenterOffsetPx));
+      } catch (e) {
+        // Map isn't fully built yet, ignore
+      }
     });
   }
-
+  
   void _measureBottomOverlayHeight() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final context = _bottomOverlayKey.currentContext;
@@ -329,7 +311,7 @@ class _MapHomeViewState extends ConsumerState<_MapHomeView> with WidgetsBindingO
                           child: TextField(
                             autofocus: true,
                             decoration: InputDecoration(
-                              hintText: 'Search or type custom location...',
+                              hintText: 'Search campus location...',
                               prefixIcon: const Icon(Icons.search, color: Colors.black54),
                               filled: true,
                               fillColor: Colors.grey[200],
@@ -364,11 +346,16 @@ class _MapHomeViewState extends ConsumerState<_MapHomeView> with WidgetsBindingO
                             onTap: () => Navigator.pop(sheetContext, workAddress),
                           ),
                         
+                        // REMOVED custom string input tile here. Added "No Results" message.
                         if (localSearchText.isNotEmpty && sheetFiltered.isEmpty && !showHome && !showWork)
-                          ListTile(
-                            leading: const Icon(Icons.edit_location_alt, color: Colors.black),
-                            title: Text('Set pickup as "$localSearchText"', style: const TextStyle(fontWeight: FontWeight.bold)),
-                            onTap: () => Navigator.pop(sheetContext, localSearchText), 
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            child: Center(
+                              child: Text(
+                                'No locations found matching "$localSearchText"',
+                                style: const TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+                              ),
+                            ),
                           ),
 
                         const Divider(height: 1),
@@ -398,7 +385,6 @@ class _MapHomeViewState extends ConsumerState<_MapHomeView> with WidgetsBindingO
 
     if (!mounted) return;
     
-    // ---> FIX: Resolve the Home/Work string into a real GPS coordinate for Pickup <---
     setState(() {
       if (selected == null) {
         _useCurrentLocationAsPickup = true;
@@ -407,13 +393,11 @@ class _MapHomeViewState extends ConsumerState<_MapHomeView> with WidgetsBindingO
       } else if (selected is String) {
         _useCurrentLocationAsPickup = false;
         
-        // Try to match the Home/Work string to actual IITK coordinates
         final matchedLoc = _resolveDropoffLocation(selected);
         if (matchedLoc != null) {
           _selectedPickupLocation = matchedLoc;
           _customPickupName = null;
         } else {
-          // If it really doesn't exist, treat it as custom text
           _selectedPickupLocation = null;
           _customPickupName = selected; 
         }
@@ -475,7 +459,7 @@ class _MapHomeViewState extends ConsumerState<_MapHomeView> with WidgetsBindingO
                           child: TextField(
                             autofocus: true,
                             decoration: InputDecoration(
-                              hintText: 'Search or type custom destination...',
+                              hintText: 'Search campus destination...',
                               prefixIcon: const Icon(Icons.search, color: Colors.black54),
                               filled: true,
                               fillColor: Colors.grey[200],
@@ -504,11 +488,16 @@ class _MapHomeViewState extends ConsumerState<_MapHomeView> with WidgetsBindingO
                             onTap: () => Navigator.pop(sheetContext, workAddress),
                           ),
                         
+                        // REMOVED custom string input tile here. Added "No Results" message.
                         if (localSearchText.isNotEmpty && sheetFiltered.isEmpty && !showHome && !showWork)
-                          ListTile(
-                            leading: const Icon(Icons.edit_location_alt, color: Colors.black),
-                            title: Text('Drop off at "$localSearchText"', style: const TextStyle(fontWeight: FontWeight.bold)),
-                            onTap: () => Navigator.pop(sheetContext, localSearchText), 
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            child: Center(
+                              child: Text(
+                                'No locations found matching "$localSearchText"',
+                                style: const TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+                              ),
+                            ),
                           ),
 
                         const Divider(height: 1),
@@ -538,13 +527,11 @@ class _MapHomeViewState extends ConsumerState<_MapHomeView> with WidgetsBindingO
 
     if (!mounted || selected == null) return;
     
-    // ---> FIX: Resolve the Home/Work string into a real GPS coordinate for Dropoff <---
     if (selected is String) {
       final matchedDropoff = _resolveDropoffLocation(selected);
-      
       _openTripConfirmation(
-        destinationName: matchedDropoff?.name ?? selected, // Uses the official name if found
-        dropoff: matchedDropoff // Passes the coordinates so the map draws the line!
+        destinationName: matchedDropoff?.name ?? selected, 
+        dropoff: matchedDropoff
       );
     } else if (selected is DropoffLocation) {
       _openTripConfirmation(destinationName: selected.name, dropoff: selected);
