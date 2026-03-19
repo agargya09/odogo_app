@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:odogo_app/controllers/trip_controller.dart';
+import 'package:odogo_app/models/enums.dart';
+import 'package:odogo_app/models/trip_model.dart';
 import 'ride_confirmed_screen.dart';
 
 class WaitingForDriverScreen extends ConsumerStatefulWidget { // Or ConsumerWidget
@@ -21,20 +24,6 @@ class _WaitingForDriverScreenState extends ConsumerState<WaitingForDriverScreen>
   @override
   void initState() {
     super.initState();
-    // Simulates the backend finding a driver after 3 seconds
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => RideConfirmedScreen(
-              dropoffPoint: widget.dropoffPoint,
-              pickupPoint: widget.pickupPoint,
-            ),
-          ),
-        );
-      }
-    });
   }
   void _cancelRide() {
     // Show a cancellation popup
@@ -50,6 +39,29 @@ class _WaitingForDriverScreenState extends ConsumerState<WaitingForDriverScreen>
 
   @override
   Widget build(BuildContext context) {
+    // 1. ADD THIS LISTENER TO THE TOP OF YOUR BUILD METHOD
+    // It silently watches the trip document in the background
+    ref.listen<AsyncValue<TripModel?>>(
+      activeTripStreamProvider(widget.tripID),
+      (previous, next) {
+        final trip = next.value;
+        // 2. If the database status changes to confirmed...
+        if (trip != null && trip.status == TripStatus.confirmed) {
+          // 3. Automatically push to the confirmed screen!
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RideConfirmedScreen(
+                // Pass the tripID so the confirmed screen can read the real PIN!
+                tripID: widget.tripID, 
+                dropoffPoint: widget.dropoffPoint,
+                pickupPoint: widget.pickupPoint,
+              ),
+            ),
+          );
+        }
+      },
+    );
     return Scaffold(
       backgroundColor: Colors.black,
       extendBodyBehindAppBar: true, // Lets the map slide cleanly under the top bar

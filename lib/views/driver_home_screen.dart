@@ -163,14 +163,14 @@ void dispose() {
         ),
       );
     }
-  }
 
-  void _acceptRide() {
-  // Push to the active pickup screen!
-  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => const DriverActivePickupScreen()),
-  );
+  // void _acceptRide() {
+  // // Push to the active pickup screen!
+  // Navigator.push(
+  //   context,
+  //   MaterialPageRoute(builder: (context) => const DriverActivePickupScreen()),
+  // );
+  
 }
 
   @override // Removed the duplicate @override
@@ -374,20 +374,36 @@ void dispose() {
                       const Text('Incoming Request', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 18)),
                       const SizedBox(height: 12),
                       // 3. Replaced hardcoded text with REAL database fields!
-                      _buildMapInfoRow('Passenger:', incomingTrip.commuter),
+                      _buildMapInfoRow('Passenger:', incomingTrip.commuterName),
                       _buildMapInfoRow('Location:', incomingTrip.startLocName),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           _buildMapInfoRow('Drop:', incomingTrip.endLocName),
                           ElevatedButton(
-                            // 4. Wired the Accept button to actually update the database
                             onPressed: () async {
+                              final currentUserName = ref.read(currentUserProvider)?.name;
                               final currentUserId = ref.read(currentUserProvider)?.userID;
-                              if (currentUserId != null) {
-                                await ref.read(tripControllerProvider.notifier).acceptRide(incomingTrip.tripID, currentUserId);
+                              if (currentUserName != null && currentUserId != null) {
+                                // 1. Execute your robust backend method
+                                await ref.read(tripControllerProvider.notifier).acceptRide(
+                                  incomingTrip.tripID,
+                                  currentUserName,
+                                  currentUserId,
+                                );
+                                
+                                // 2. Navigate away from the searching screen
+                                if (mounted) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => DriverActivePickupScreen(
+                                        tripID: incomingTrip.tripID,
+                                      ),
+                                    ),
+                                  );
+                                }
                               }
-                              _acceptRide(); // Navigates to the active pickup screen
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: odogoGreen, 

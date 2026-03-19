@@ -3,23 +3,25 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'commuter_cancel_confirmation_screen.dart';
 import 'pickup_confirmed_screen.dart';
 
-class RideConfirmedScreen extends StatefulWidget {
+class RideConfirmedScreen extends ConsumerStatefulWidget {
+  final String tripID;
   final LatLng? dropoffPoint;
   final LatLng? pickupPoint;
 
-  const RideConfirmedScreen({super.key, this.dropoffPoint, this.pickupPoint});
+  const RideConfirmedScreen({super.key, required this.tripID, this.dropoffPoint, this.pickupPoint});
 
   @override
-  State<RideConfirmedScreen> createState() => _RideConfirmedScreenState();
+  ConsumerState<RideConfirmedScreen> createState() => _RideConfirmedScreenState();
 }
 
-class _RideConfirmedScreenState extends State<RideConfirmedScreen> {
+class _RideConfirmedScreenState extends ConsumerState<RideConfirmedScreen> {
   static const LatLng _fallbackCurrentLocation = LatLng(26.5123, 80.2329);
   static const LatLng _driverLocation = LatLng(26.5150, 80.2300);
   static const LatLng _fallbackDropoffLocation = LatLng(26.5170, 80.2310);

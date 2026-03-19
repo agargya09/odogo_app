@@ -4,20 +4,22 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'driver_active_trip_screen.dart';
 import 'driver_cancel_confirmation_screen.dart'; 
 
-class DriverActivePickupScreen extends StatefulWidget {
-  const DriverActivePickupScreen({super.key});
+class DriverActivePickupScreen extends ConsumerStatefulWidget {
+  final String tripID;
+  const DriverActivePickupScreen({super.key, required this.tripID});
 
   @override
-  State<DriverActivePickupScreen> createState() => _DriverActivePickupScreenState();
+  ConsumerState<DriverActivePickupScreen> createState() => _DriverActivePickupScreenState();
 }
 
-class _DriverActivePickupScreenState extends State<DriverActivePickupScreen> {
+class _DriverActivePickupScreenState extends ConsumerState<DriverActivePickupScreen> {
   final Color odogoGreen = const Color(0xFF66D2A3);
   final Color etaOrange = const Color(0xFFEC5B13);
   static const LatLng _fallbackDriverLocation = LatLng(26.5100, 80.2300);

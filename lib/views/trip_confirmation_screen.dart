@@ -258,8 +258,10 @@ class _TripConfirmationScreenState extends ConsumerState<TripConfirmationScreen>
                       // 3. Create the TripModel
                       final newTrip = TripModel(
                         tripID: uniqueTripId,
-                        commuter: currentUser.name,
-                        driver: null, 
+                        commuterName: currentUser.name,
+                        commuterID: currentUser.userID,
+                        driverName: null,
+                        driverID: null,
                         startLocName: widget.pickupLabel,
                         endLocName: widget.destination,
                         status: TripStatus.pending, 

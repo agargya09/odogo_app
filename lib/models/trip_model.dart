@@ -4,8 +4,10 @@ import 'package:odogo_app/models/enums.dart';
 class TripModel {
   final String tripID;
   final TripStatus status;
-  final String commuter;
-  final String? driver; // Nullable until a driver accepts
+  final String commuterName;
+  final String commuterID;
+  final String? driverName; // Nullable until a driver accepts
+  final String? driverID; // Nullable until a driver accepts
   final String startLocName;
   final String endLocName;
   final Timestamp? eta;
@@ -17,8 +19,10 @@ class TripModel {
   TripModel({
     required this.tripID,
     required this.status,
-    required this.commuter,
-    this.driver,
+    required this.commuterName,
+    required this.commuterID,
+    this.driverName,
+    this.driverID,
     required this.startLocName,
     required this.endLocName,
     this.eta,
@@ -35,8 +39,10 @@ class TripModel {
         (e) => e.name == json['status'],
         orElse: () => TripStatus.pending,
       ),
-      commuter: json['commuter'] ?? '',
-      driver: json['driver'],
+      commuterName: json['commuterName'] ?? '',
+      commuterID: json['commuterID'] ?? '',
+      driverName: json['driverName'],
+      driverID: json['driverID'],
       startLocName: json['startLoc'] ?? '',
       endLocName: json['endLoc'] ?? '',
       eta: json['eta'] as Timestamp?,
@@ -51,8 +57,10 @@ class TripModel {
     return {
       'tripID': tripID,
       'status': status.name,
-      'commuter': commuter,
-      if (driver != null) 'driver': driver,
+      'commuterName': commuterName,
+      'commuterID': commuterID,
+      if (driverName != null) 'driverName': driverName,
+      if (driverID != null) 'driverID': driverID,
       'startLoc': startLocName,
       'endLoc': endLocName,
       if (eta != null) 'eta': eta,

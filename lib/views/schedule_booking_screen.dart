@@ -550,7 +550,8 @@ class _ScheduleBookingScreenState extends ConsumerState<ScheduleBookingScreen> {
       tripID: DateTime.now().millisecondsSinceEpoch.toString(), // Unique ID
       status: TripStatus
           .scheduled, // Saves as 'scheduled' so it stays hidden until the broadcast window
-      commuter: user.userID,
+      commuterID: user.userID,
+      commuterName: user.name,
       startLocName: _pickupController.text.trim(),
       endLocName: _dropoffController.text.trim(),
       ridePIN: ridePin,

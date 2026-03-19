@@ -89,12 +89,13 @@ class TripController extends Notifier<AsyncValue<void>> {
   }
 
   /// Driver: Accepts a pending ride
-  Future<void> acceptRide(String tripID, String driverID) async {
+  Future<void> acceptRide(String tripID, String driverName, String driverID) async {
     state = const AsyncValue.loading();
     try {
       // 1. Assign driver and confirm trip
       await _repository.updateTripData(tripID, {
         'status': TripStatus.confirmed.name,
+        'driverName': driverName,
         'driverID': driverID,
       });
 
