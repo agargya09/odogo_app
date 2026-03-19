@@ -11,8 +11,9 @@ import 'pickup_confirmed_screen.dart';
 
 class RideConfirmedScreen extends StatefulWidget {
   final LatLng? dropoffPoint;
+  final LatLng? pickupPoint;
 
-  const RideConfirmedScreen({super.key, this.dropoffPoint});
+  const RideConfirmedScreen({super.key, this.dropoffPoint, this.pickupPoint});
 
   @override
   State<RideConfirmedScreen> createState() => _RideConfirmedScreenState();
@@ -33,7 +34,12 @@ class _RideConfirmedScreenState extends State<RideConfirmedScreen> {
   void initState() {
     super.initState();
     _dropoffLocation = widget.dropoffPoint ?? _fallbackDropoffLocation;
-    _loadCurrentLocationAndRoute();
+    if (widget.pickupPoint != null) {
+      _currentLocation = widget.pickupPoint!;
+      _loadRoadRoute();
+    } else {
+      _loadCurrentLocationAndRoute();
+    }
     // Auto-advance to pickup confirmed screen after 5 seconds (simulates driver entering OTP)
     _autoAdvanceTimer = Timer(const Duration(seconds: 5), () {
       if (mounted) {

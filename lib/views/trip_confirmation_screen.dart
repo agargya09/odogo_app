@@ -12,6 +12,7 @@ class TripConfirmationScreen extends StatefulWidget {
   final String pickupLabel;
   final LatLng? pickupPoint;
   final LatLng? dropoffPoint;
+  final bool pickupIsCurrentLocation;
 
   // We pass the searched destination into this screen so it dynamically updates
   const TripConfirmationScreen({
@@ -20,6 +21,7 @@ class TripConfirmationScreen extends StatefulWidget {
     required this.pickupLabel,
     this.pickupPoint,
     this.dropoffPoint,
+    this.pickupIsCurrentLocation = true,
   });
 
   @override
@@ -238,7 +240,10 @@ class _TripConfirmationScreenState extends State<TripConfirmationScreen> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => WaitingForDriverScreen(dropoffPoint: widget.dropoffPoint),
+                          builder: (context) => WaitingForDriverScreen(
+                            dropoffPoint: widget.dropoffPoint,
+                            pickupPoint: widget.pickupPoint,
+                          ),
                         ),
                       );
                     },

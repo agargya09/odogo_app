@@ -88,6 +88,8 @@ class _MapHomeViewState extends State<_MapHomeView> {
   List<DropoffLocation> _filteredLocations = iitkDropoffLocations
       .take(8)
       .toList();
+  bool _useCurrentLocationAsPickup = true;
+  DropoffLocation? _selectedPickupLocation;
 
   double get _verticalCenterOffsetPx {
     return (_bottomOverlayHeight + _bottomOverlayInset) / 2;
@@ -190,7 +192,7 @@ class _MapHomeViewState extends State<_MapHomeView> {
     required String destinationName,
     DropoffLocation? dropoff,
   }) {
-    final pickupPoint = _currentLocation;
+    final pickupPoint = _resolvedPickupPoint();
     final dropoffPoint = dropoff == null
         ? null
         : LatLng(dropoff.latitude, dropoff.longitude);
@@ -203,9 +205,20 @@ class _MapHomeViewState extends State<_MapHomeView> {
           pickupLabel: _buildPickupLabel(),
           pickupPoint: pickupPoint,
           dropoffPoint: dropoffPoint,
+          pickupIsCurrentLocation: _useCurrentLocationAsPickup,
         ),
       ),
     );
+  }
+
+  LatLng? _resolvedPickupPoint() {
+    if (_useCurrentLocationAsPickup) {
+      return _currentLocation;
+    }
+
+    final selected = _selectedPickupLocation;
+    if (selected == null) return null;
+    return LatLng(selected.latitude, selected.longitude);
   }
 
   DropoffLocation? _resolveDropoffLocation(String query) {
@@ -228,6 +241,10 @@ class _MapHomeViewState extends State<_MapHomeView> {
   }
 
   String _buildPickupLabel() {
+    if (!_useCurrentLocationAsPickup && _selectedPickupLocation != null) {
+      return _selectedPickupLocation!.name;
+    }
+
     final nearest = _nearestCampusLocationName();
     if (nearest == null) {
       return 'Near your current location';
@@ -281,6 +298,69 @@ class _MapHomeViewState extends State<_MapHomeView> {
       _searchController.text = location.name;
     });
     _openTripConfirmation(destinationName: location.name, dropoff: location);
+  }
+
+  Future<void> _openPickupSelector() async {
+    final selected = await showModalBottomSheet<DropoffLocation?>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.65,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
+                  child: Text(
+                    'Choose pickup point',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.my_location, color: Color(0xFF66D2A3)),
+                  title: const Text('Use current location'),
+                  onTap: () => Navigator.pop(sheetContext, null),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: iitkDropoffLocations.length,
+                    itemBuilder: (context, index) {
+                      final location = iitkDropoffLocations[index];
+                      return ListTile(
+                        leading: const Icon(Icons.place_outlined, color: Colors.black54),
+                        title: Text(location.name),
+                        onTap: () => Navigator.pop(sheetContext, location),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (!mounted) return;
+    setState(() {
+      if (selected == null) {
+        _useCurrentLocationAsPickup = true;
+        _selectedPickupLocation = null;
+      } else {
+        _useCurrentLocationAsPickup = false;
+        _selectedPickupLocation = selected;
+      }
+    });
   }
 
   @override
@@ -427,6 +507,40 @@ class _MapHomeViewState extends State<_MapHomeView> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F6F6),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.my_location, color: Color(0xFF66D2A3)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _useCurrentLocationAsPickup
+                              ? 'Pickup: Current location'
+                              : 'Pickup: ${_selectedPickupLocation!.name}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _openPickupSelector,
+                        child: const Text('Change'),
+                      ),
+                    ],
+                  ),
+                ),
                 // Where to? Search Bar
                 TextField(
                   controller: _searchController,
