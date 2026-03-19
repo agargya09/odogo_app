@@ -191,7 +191,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: Image.asset(
-                  'assets/images/odogo_logo_black_bg.jpeg',
+                  'assets/images/odogo_logo.png',
                   height: 80,
                 ),
               ),

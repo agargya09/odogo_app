@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'phone_number_edit_screen.dart';
-import 'gender_selection_screen.dart';
-import 'email_edit_screen.dart';
+import 'personal_details_screen.dart'; // <-- Importing the shared Personal Details screen
 import 'driver_documents_profile_page.dart'; 
 import 'location_sharing_screen.dart';
-import 'edit_date_of_birth_screen.dart';
 import 'commute_alerts_screen.dart';
 import 'switch_account_screen.dart';
 import 'account_deletion_screen.dart';
 import 'sign_out_screen.dart';
-import 'edit_name_screen.dart'; // <-- Added the Edit Name import!
+import 'edit_name_screen.dart';
 
 class BoundedBouncingScrollPhysics extends BouncingScrollPhysics {
   const BoundedBouncingScrollPhysics({super.parent});
@@ -43,7 +40,7 @@ class DriverProfileScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // --- UPDATED FIXED HEADER SECTION ---
+            // --- HEADER SECTION ---
             Container(
               padding: const EdgeInsets.all(24),
               color: Colors.black,
@@ -56,10 +53,9 @@ class DriverProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 16),
                   
-                  // Expanded ensures long names don't break the UI
                   const Expanded(
                     child: Text(
-                      'Inesh', // Name from your driver wireframe
+                      'Inesh', 
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 24,
@@ -68,14 +64,13 @@ class DriverProfileScreen extends StatelessWidget {
                     ),
                   ),
                   
-                  // NEW EDIT BUTTON
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1), // Subtle background
+                      color: Colors.white.withOpacity(0.1), 
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.edit, color: Color(0xFF66D2A3), size: 20), // OdoGo Green
+                      icon: const Icon(Icons.edit, color: Color(0xFF66D2A3), size: 20),
                       onPressed: () {
                         Navigator.push(
                           context, 
@@ -92,118 +87,110 @@ class DriverProfileScreen extends StatelessWidget {
             Expanded(
               child: ScrollConfiguration(
                 behavior: ScrollBehavior().copyWith(overscroll: false),
-              child: SingleChildScrollView(
-                physics: const BoundedBouncingScrollPhysics(),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 10),
-                    
-                    // Profile Options (EXACT spacing and dividers as Commuter Profile)
-                    _buildTile(
-                      context, 
-                      Icons.phone, 
-                      'Phone Number',
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const PhoneNumberEditScreen()));
-                      }
-                    ),
-                    const Divider(height: 30, thickness: 1, color: Colors.black12),
-                    
-                    _buildTile(
-                      context, 
-                      Icons.person_outline, 
-                      'Gender',
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const GenderSelectionScreen()));
-                      }
-                    ),
-                    const Divider(height: 30, thickness: 1, color: Colors.black12),
-                    
-                    _buildTile(
-                      context, 
-                      Icons.email_outlined, 
-                      'Email',
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const EmailEditScreen()));
-                      }
-                    ),
-                    const Divider(height: 30, thickness: 1, color: Colors.black12),
-                    
-                    // Driver Specific: Documents
-                    _buildTile(
-                      context, 
-                      Icons.description_outlined, 
-                      'Documents',
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const DriverDocumentsScreen()));
-                      }
-                    ),
-                    const Divider(height: 30, thickness: 1, color: Colors.black12),
-                    
-                    _buildTile(
-                      context, 
-                      Icons.location_on_outlined, 
-                      'Location Sharing',
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const LocationSharingScreen()));
-                      }
-                    ),
-                    const Divider(height: 30, thickness: 1, color: Colors.black12),
-                    
-                    _buildTile(
-                      context, 
-                      Icons.calendar_today, 
-                      'Date of Birth',
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const EditDateOfBirthScreen()));
-                      }
-                    ),
-                    const Divider(height: 30, thickness: 1, color: Colors.black12),
-                    
-                    _buildTile(
-                      context, 
-                      Icons.notifications_none, 
-                      'Commute Alerts',
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const CommuteAlertsScreen()));
-                      }
-                    ),
-                    const Divider(height: 30, thickness: 1, color: Colors.black12),
-                    
-                    _buildTile(
-                      context, 
-                      Icons.swap_horiz, 
-                      'Switch Account',
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const SwitchAccountScreen()));
-                      }
-                    ),
-                    const Divider(height: 30, thickness: 1, color: Colors.black12),
-                    
-                    _buildTile(
-                      context, 
-                      Icons.delete_outline, 
-                      'Account Deletion', 
-                      isDestructive: true,
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const AccountDeletionScreen()));
-                      }
-                    ),
-                    const Divider(height: 30, thickness: 1, color: Colors.black12),
-                    
-                    _buildTile(
-                      context, 
-                      Icons.power_settings_new, 
-                      'Sign out', 
-                      isDestructive: true,
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const SignOutScreen()));
-                      }
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+                child: SingleChildScrollView(
+                  physics: const BoundedBouncingScrollPhysics(),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 10),
+                      
+                      // 1. THE NEW PERSONAL DETAILS BUTTON
+                      _buildTile(
+                        context, 
+                        Icons.badge_outlined, 
+                        'Personal Details',
+                        onTap: () {
+                          Navigator.push(
+                            context, 
+                            MaterialPageRoute(builder: (context) => const PersonalDetailsScreen())
+                          );
+                        }
+                      ),
+                      const Divider(height: 30, thickness: 1, color: Colors.black12),
+                      
+                      // 2. DRIVER SPECIFIC: DOCUMENTS
+                      _buildTile(
+                        context, 
+                        Icons.description_outlined, 
+                        'Documents',
+                        onTap: () {
+                          Navigator.push(
+                            context, 
+                            MaterialPageRoute(builder: (context) => const DriverDocumentsScreen())
+                          );
+                        }
+                      ),
+                      const Divider(height: 30, thickness: 1, color: Colors.black12),
+                      
+                      // 3. THE REST OF THE MENU
+                      _buildTile(
+                        context, 
+                        Icons.location_on_outlined, 
+                        'Location Sharing',
+                        onTap: () {
+                          Navigator.push(
+                            context, 
+                            MaterialPageRoute(builder: (context) => const LocationSharingScreen())
+                          );
+                        }
+                      ),
+                      const Divider(height: 30, thickness: 1, color: Colors.black12),
+                      
+                      _buildTile(
+                        context, 
+                        Icons.notifications_none, 
+                        'Commute Alerts',
+                        onTap: () {
+                          Navigator.push(
+                            context, 
+                            MaterialPageRoute(builder: (context) => const CommuteAlertsScreen())
+                          );
+                        }
+                      ),
+                      const Divider(height: 30, thickness: 1, color: Colors.black12),
+                      
+                      _buildTile(
+                        context, 
+                        Icons.swap_horiz, 
+                        'Switch Account',
+                        onTap: () {
+                          Navigator.push(
+                            context, 
+                            MaterialPageRoute(builder: (context) => const SwitchAccountScreen())
+                          );
+                        }
+                      ),
+                      const Divider(height: 30, thickness: 1, color: Colors.black12),
+                      
+                      _buildTile(
+                        context, 
+                        Icons.delete_outline, 
+                        'Account Deletion', 
+                        isDestructive: true,
+                        onTap: () {
+                          Navigator.push(
+                            context, 
+                            MaterialPageRoute(builder: (context) => const AccountDeletionScreen())
+                          );
+                        }
+                      ),
+                      const Divider(height: 30, thickness: 1, color: Colors.black12),
+                      
+                      _buildTile(
+                        context, 
+                        Icons.power_settings_new, 
+                        'Sign out', 
+                        isDestructive: true,
+                        onTap: () {
+                          Navigator.push(
+                            context, 
+                            MaterialPageRoute(builder: (context) => const SignOutScreen())
+                          );
+                        }
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
-              ),
               ),
             ),
           ],
@@ -212,7 +199,6 @@ class DriverProfileScreen extends StatelessWidget {
     );
   }
 
-  // Exact 1-to-1 matching helper function from your commuter profile
   Widget _buildTile(BuildContext context, IconData icon, String title, {bool isDestructive = false, VoidCallback? onTap}) {
     return ListTile(
       leading: Icon(icon, color: isDestructive ? Colors.red : Colors.black87),
@@ -225,9 +211,7 @@ class DriverProfileScreen extends StatelessWidget {
         ),
       ),
       trailing: const Icon(Icons.chevron_right, color: Colors.black26),
-      onTap: onTap ?? () {
-        print("$title clicked");
-      },
+      onTap: onTap,
     );
   }
 }

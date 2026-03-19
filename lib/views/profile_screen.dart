@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'phone_number_edit_screen.dart';
-import 'gender_selection_screen.dart';
-import 'email_edit_screen.dart';
+import 'personal_details_screen.dart'; // We are importing our new screen here!
 import 'home_address_edit_screen.dart';
 import 'edit_work_address_screen.dart';
 import 'location_sharing_screen.dart';
-import 'edit_date_of_birth_screen.dart';
 import 'commute_alerts_screen.dart';
 import 'switch_account_screen.dart';
 import 'account_deletion_screen.dart';
@@ -30,8 +27,6 @@ class BoundedBouncingScrollPhysics extends BouncingScrollPhysics {
     if (value > position.maxScrollExtent + maxOverscroll) {
       return value - (position.maxScrollExtent + maxOverscroll);
     }
-    
-    // Allow normal scrolling everywhere else
     return super.applyBoundaryConditions(position, value);
   }
 }
@@ -46,7 +41,7 @@ class ProfileScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // --- UPDATED HEADER SECTION ---
+            // --- HEADER SECTION ---
             Container(
               padding: const EdgeInsets.all(24),
               color: Colors.black,
@@ -58,8 +53,6 @@ class ProfileScreen extends StatelessWidget {
                     child: Icon(Icons.person, color: Colors.white, size: 35),
                   ),
                   const SizedBox(width: 16),
-                  
-                  // Expanded ensures long names don't break the layout
                   const Expanded(
                     child: Text(
                       'Inesh',
@@ -70,16 +63,14 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1), // Subtle background
+                      color: Colors.white.withOpacity(0.1), 
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.edit, color: Color(0xFF66D2A3), size: 20), // OdoGo Green
+                      icon: const Icon(Icons.edit, color: Color(0xFF66D2A3), size: 20),
                       onPressed: () {
-                        // THIS NOW WORKS!
                         Navigator.push(
                           context, 
                           MaterialPageRoute(builder: (context) => const EditNameScreen())
@@ -101,43 +92,21 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       const SizedBox(height: 10),
                       
-                      // Profile Options
+                      // 1. THE NEW PERSONAL DETAILS BUTTON
                       _buildTile(
                         context, 
-                        Icons.phone, 
-                        'Phone Number',
+                        Icons.badge_outlined, // A good icon for personal info
+                        'Personal Details',
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const PhoneNumberEditScreen()),
+                            MaterialPageRoute(builder: (context) => const PersonalDetailsScreen()),
                           );
                         }
                       ),
                       const Divider(height: 30, thickness: 1, color: Colors.black12),
-                      _buildTile(
-                        context, 
-                        Icons.person_outline, 
-                        'Gender',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const GenderSelectionScreen()),
-                          );
-                        }
-                      ),
-                      const Divider(height: 30, thickness: 1, color: Colors.black12),
-                      _buildTile(
-                        context, 
-                        Icons.email_outlined, 
-                        'Email',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const EmailEditScreen()),
-                          );
-                        }
-                      ),
-                      const Divider(height: 30, thickness: 1, color: Colors.black12),
+                      
+                      // 2. THE REST OF YOUR ORIGINAL MENU
                       _buildTile(
                         context, 
                         Icons.home_outlined, 
@@ -170,18 +139,6 @@ class ProfileScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => const LocationSharingScreen()),
-                          );
-                        }
-                      ),
-                      const Divider(height: 30, thickness: 1, color: Colors.black12),
-                      _buildTile(
-                        context, 
-                        Icons.calendar_today, 
-                        'Date of Birth',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const EditDateOfBirthScreen()),
                           );
                         }
                       ),
@@ -247,7 +204,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // The missing helper function that makes your tiles clickable!
   Widget _buildTile(BuildContext context, IconData icon, String title, {bool isDestructive = false, VoidCallback? onTap}) {
     return ListTile(
       leading: Icon(icon, color: isDestructive ? Colors.red : Colors.black87),
@@ -260,10 +216,7 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
       trailing: const Icon(Icons.chevron_right, color: Colors.black26),
-      onTap: onTap ?? () {
-        // Default action if no specific onTap is provided
-        print("$title clicked");
-      },
+      onTap: onTap,
     );
   }
 }

@@ -148,67 +148,70 @@ class _ProfileOtpVerificationScreenState extends State<ProfileOtpVerificationScr
         title: const Text('Verification', style: TextStyle(color: Colors.white)),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              const Text(
-                'Enter Verification Code',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'We have sent a 4-digit code to:\n${widget.contactInfo}',
-                style: const TextStyle(fontSize: 16, color: Colors.grey, height: 1.5),
-              ),
-              const SizedBox(height: 40),
-
-              // The 4-Digit OTP Input Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(4, (index) => _buildOtpBox(index)),
-              ),
-              
-              const SizedBox(height: 40),
-
-              // Verify Button
-              ElevatedButton(
-                onPressed: _isLoading ? null : _verifyAndSave,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black, // Sleek black to match profile theme
-                  minimumSize: const Size.fromHeight(56),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        // 1. ADD THIS WRAPPER
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                const Text(
+                  'Enter Verification Code',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
                 ),
-                child: Text(
-                  _isLoading ? 'Please wait...' : 'Verify & Save',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                const SizedBox(height: 12),
+                Text(
+                  'We have sent a 4-digit code to:\n${widget.contactInfo}',
+                  style: const TextStyle(fontSize: 16, color: Colors.grey, height: 1.5),
                 ),
-              ),
-              
-              const SizedBox(height: 24),
+                const SizedBox(height: 40),
 
-              if (_isOtpBypassEnabled)
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 16),
+                // The 4-Digit OTP Input Row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(4, (index) => _buildOtpBox(index)),
+                ),
+                
+                const SizedBox(height: 40),
+
+                // Verify Button
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _verifyAndSave,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black, 
+                    minimumSize: const Size.fromHeight(56),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
                   child: Text(
-                    'Test mode: use OTP 0000',
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                    _isLoading ? 'Please wait...' : 'Verify & Save',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 ),
-              
-              // Resend Code Option
-              Center(
-                child: GestureDetector(
-                  onTap: _isLoading ? null : _resendOtp,
-                  child: Text(
-                    'Didn\'t receive a code? Resend',
-                    style: TextStyle(color: odogoGreen, fontWeight: FontWeight.bold, fontSize: 15),
+                
+                const SizedBox(height: 24),
+
+                if (_isOtpBypassEnabled)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 16),
+                    child: Text(
+                      'Test mode: use OTP 0000',
+                      style: TextStyle(color: Colors.grey, fontSize: 13),
+                    ),
+                  ),
+                
+                // Resend Code Option
+                Center(
+                  child: GestureDetector(
+                    onTap: _isLoading ? null : _resendOtp,
+                    child: Text(
+                      'Didn\'t receive a code? Resend',
+                      style: TextStyle(color: odogoGreen, fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
