@@ -142,22 +142,28 @@ class AuthController extends Notifier<AuthState> {
 
       final prefs = await SharedPreferences.getInstance();
 
-      // Keep existing logic
-      await prefs.setString('odogo_user_email', email);
+      // Standardize the email to prevent duplicates/ghosts
+      final cleanEmail = email.trim().toLowerCase();
 
-      // NEW LOGIC: Add to linked accounts list if not already there
-      List<String> linked = prefs.getStringList('odogo_linked_accounts') ?? [];
-      if (!linked.contains(email)) {
-        linked.add(email);
+      await prefs.setString('odogo_user_email', cleanEmail);
+
+      // SAFELY load the list as a mutable copy
+      List<String> linked = List<String>.from(
+        prefs.getStringList('odogo_linked_accounts') ?? [],
+      );
+
+      // Add only if it doesn't strictly match an existing one
+      if (!linked.any((e) => e.trim().toLowerCase() == cleanEmail)) {
+        linked.add(cleanEmail);
         await prefs.setStringList('odogo_linked_accounts', linked);
       }
 
-      final userModel = await _userRepo.getUserByEmail(email);
+      final userModel = await _userRepo.getUserByEmail(cleanEmail);
 
       if (userModel != null) {
         state = AuthAuthenticated(userModel);
       } else {
-        state = AuthNeedsProfileSetup(email);
+        state = AuthNeedsProfileSetup(cleanEmail);
       }
     } catch (e) {
       state = AuthError(e.toString());
@@ -190,12 +196,30 @@ class AuthController extends Notifier<AuthState> {
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // 1. Wipe the active session from the hard drive
-    await prefs.remove('odogo_user_email');
+    // 1. Get the active email BEFORE we wipe it
+    final activeEmail = prefs.getString('odogo_user_email');
+    List<String> linked = List<String>.from(
+      prefs.getStringList('odogo_linked_accounts') ?? [],
+    );
 
-    // Note: We intentionally DO NOT auto-switch accounts here anymore.
-    // 2. Send the user to the Landing Page.
-    state = AuthInitial();
+    if (activeEmail != null) {
+      // 2. Strictly hunt down and destroy the ghost account from the list
+      linked.removeWhere(
+        (e) => e.trim().toLowerCase() == activeEmail.trim().toLowerCase(),
+      );
+      await prefs.setStringList('odogo_linked_accounts', linked);
+    }
+
+    // 3. NEW ROUTING LOGIC: Check if there are other accounts left!
+    if (linked.isNotEmpty) {
+      // If other accounts exist, silently switch to the most recent one.
+      // GoRouter will automatically teleport them to that account's Home Screen!
+      await switchAccount(linked.last);
+    } else {
+      // If this was the last account on the device, completely wipe the session and go to Login.
+      await prefs.remove('odogo_user_email');
+      state = AuthInitial();
+    }
   }
 
   // --- ADD THIS BRAND NEW METHOD ---
@@ -213,7 +237,6 @@ class AuthController extends Notifier<AuthState> {
   Future<void> deleteAccount(String email, String otp) async {
     state = AuthLoading();
     try {
-      // 1. Verify the OTP
       final verified = EmailOtpAuthService.instance.verifyOtp(
         email: email,
         otp: otp,
@@ -223,17 +246,26 @@ class AuthController extends Notifier<AuthState> {
         return;
       }
 
-      // 2. Delete the user document from Firestore
-      // (If you have a _userRepo.deleteUser(email) method, use that instead)
       await FirebaseFirestore.instance.collection('users').doc(email).delete();
 
-      // 3. Wipe the session from the phone's hard drive
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('odogo_user_email');
 
-      // 4. Reset the state to Initial.
-      // GoRouter will instantly see this and teleport the user to the Landing Page!
-      state = AuthInitial();
+      // SAFELY load and destroy the ghost account from the device
+      List<String> linked = List<String>.from(
+        prefs.getStringList('odogo_linked_accounts') ?? [],
+      );
+      linked.removeWhere(
+        (e) => e.trim().toLowerCase() == email.trim().toLowerCase(),
+      );
+      await prefs.setStringList('odogo_linked_accounts', linked);
+
+      // 3. NEW ROUTING LOGIC: Apply the same smart routing for account deletion
+      if (linked.isNotEmpty) {
+        await switchAccount(linked.last);
+      } else {
+        await prefs.remove('odogo_user_email');
+        state = AuthInitial();
+      }
     } catch (e) {
       state = AuthError("Failed to delete account: $e");
     }
