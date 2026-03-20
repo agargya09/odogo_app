@@ -207,8 +207,8 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
         if (trip.status == TripStatus.scheduled &&
             trip.driverID != null &&
             trip.scheduledTime != null) {
-          if (now.isAfter(trip.scheduledTime!.toDate()) ||
-              now.isAtSameMomentAs(trip.scheduledTime!.toDate())) {
+          if (now.isAfter(trip.scheduledTime!) ||
+              now.isAtSameMomentAs(trip.scheduledTime!)) {
             ref
                 .read(tripControllerProvider.notifier)
                 .confirmScheduledRide(trip.tripID);

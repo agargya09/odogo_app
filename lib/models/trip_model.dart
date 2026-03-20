@@ -10,11 +10,12 @@ class TripModel {
   final String? driverID; // Nullable until a driver accepts
   final String startLocName;
   final String endLocName;
+  final DateTime? startTime;
   final Timestamp? eta;
   final String ridePIN;
   final bool driverEnd;
   final bool commuterEnd;
-  final Timestamp? scheduledTime; // Null for immediate rides
+  final DateTime? scheduledTime; // Null for immediate rides
 
   TripModel({
     required this.tripID,
@@ -25,6 +26,7 @@ class TripModel {
     this.driverID,
     required this.startLocName,
     required this.endLocName,
+    required this.startTime,
     this.eta,
     required this.ridePIN,
     required this.driverEnd,
@@ -45,11 +47,12 @@ class TripModel {
       driverID: json['driverID'],
       startLocName: json['startLoc'] ?? '',
       endLocName: json['endLoc'] ?? '',
+      startTime: json['startTime'] != null ? (json['startTime'] as Timestamp).toDate() : null,
       eta: json['eta'] as Timestamp?,
       ridePIN: json['ridePIN'] ?? '',
       driverEnd: json['driverEnd'] ?? false,
       commuterEnd: json['commuterEnd'] ?? false,
-      scheduledTime: json['scheduledTime'] as Timestamp?,
+      scheduledTime: json['scheduledTime'] != null ? (json['scheduledTime'] as Timestamp).toDate() : null,
     );
   }
 
@@ -63,11 +66,12 @@ class TripModel {
       if (driverID != null) 'driverID': driverID,
       'startLoc': startLocName,
       'endLoc': endLocName,
+      if (startTime != null) 'startTime': Timestamp.fromDate(startTime!),
       if (eta != null) 'eta': eta,
       'ridePIN': ridePIN,
       'driverEnd': driverEnd,
       'commuterEnd': commuterEnd,
-      if (scheduledTime != null) 'scheduledTime': scheduledTime,
+      if (scheduledTime != null) 'scheduledTime': Timestamp.fromDate(scheduledTime!),
     };
   }
 }

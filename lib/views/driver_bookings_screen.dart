@@ -319,11 +319,11 @@ class _DriverBookingsScreenState extends ConsumerState<DriverBookingsScreen> {
 
                 displayList.sort((a, b) {
                   final timeA =
-                      a.scheduledTime?.toDate() ??
+                      a.scheduledTime ??
                       a.eta?.toDate() ??
                       DateTime.now();
                   final timeB =
-                      b.scheduledTime?.toDate() ??
+                      b.scheduledTime ??
                       b.eta?.toDate() ??
                       DateTime.now();
                   return timeB.compareTo(timeA);
@@ -453,9 +453,9 @@ class DriverBookingCard extends ConsumerWidget {
 
     // 2. Override with scheduledTime or ETA if they exist
     if (trip.scheduledTime != null) {
-      displayDate = trip.scheduledTime!.toDate();
-    } else if (trip.eta != null) {
-      displayDate = trip.eta!.toDate();
+      displayDate = trip.scheduledTime!;
+    } else if (trip.startTime != null) {
+      displayDate = trip.startTime!;
     }
 
     // 3. Format it beautifully

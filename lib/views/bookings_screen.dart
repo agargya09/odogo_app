@@ -62,13 +62,13 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
 
                 displayList.sort((a, b) {
                   final timeA =
-                      a.scheduledTime?.toDate() ??
-                      a.eta?.toDate() ??
-                      DateTime.now();
+                      a.startTime ??
+                      a.scheduledTime ??
+                      DateTime.fromMillisecondsSinceEpoch(int.tryParse(a.tripID) ?? 0);
                   final timeB =
-                      b.scheduledTime?.toDate() ??
-                      b.eta?.toDate() ??
-                      DateTime.now();
+                      b.startTime ??
+                      b.scheduledTime ??
+                      DateTime.fromMillisecondsSinceEpoch(int.tryParse(a.tripID) ?? 0);
                   return timeB.compareTo(timeA); // Descending order
                 });
 
@@ -196,9 +196,9 @@ class CommuterBookingCard extends ConsumerWidget {
 
     // 2. Override with scheduledTime or ETA if they exist
     if (trip.scheduledTime != null) {
-      displayDate = trip.scheduledTime!.toDate();
-    } else if (trip.eta != null) {
-      displayDate = trip.eta!.toDate();
+      displayDate = trip.scheduledTime!;
+    } else if (trip.startTime != null) {
+      displayDate = trip.startTime!;
     }
 
     // 3. Format it beautifully (No "Immediate" text anywhere)

@@ -32,7 +32,7 @@ final pendingTripsProvider = StreamProvider<List<TripModel>>((ref) {
 
       // Scheduled rides follow the exact broadcast rules
       if (trip.status == TripStatus.scheduled && trip.scheduledTime != null) {
-        final scheduledTime = trip.scheduledTime!.toDate();
+        final scheduledTime = trip.scheduledTime!;
         final diff = scheduledTime.difference(now);
         final minutesLeft = diff.inMinutes;
 
@@ -205,7 +205,7 @@ class TripController extends Notifier<AsyncValue<void>> {
   Future<void> startRide(String tripID) async {
     state = const AsyncValue.loading();
     try {
-      await _repository.updateTripData(tripID, {'status': 'ongoing'});
+      await _repository.updateTripData(tripID, {'status': TripStatus.ongoing.name, 'startTime': DateTime.now()});
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);

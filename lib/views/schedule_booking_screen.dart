@@ -737,22 +737,17 @@ class _ScheduleBookingScreenState extends ConsumerState<ScheduleBookingScreen> {
 
     final newTrip = TripModel(
       tripID: DateTime.now().millisecondsSinceEpoch.toString(), // Unique ID
-
       status: TripStatus
           .scheduled, // Saves as 'scheduled' so it stays hidden until the broadcast window
       commuterID: user.userID,
       commuterName: user.name,
       startLocName: _pickupController.text.trim(),
-
       endLocName: _dropoffController.text.trim(),
-
+      startTime: null,
       ridePIN: ridePin,
-
       driverEnd: false,
-
       commuterEnd: false,
-
-      scheduledTime: Timestamp.fromDate(scheduledDateTime),
+      scheduledTime: scheduledDateTime,
     );
 
     await ref.read(tripControllerProvider.notifier).scheduleRide(newTrip);
