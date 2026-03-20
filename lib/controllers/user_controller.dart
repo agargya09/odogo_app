@@ -169,6 +169,21 @@ class UserController extends Notifier<AsyncValue<void>> {
   //   }
   // }  // currently commented because we need to set up an API key for otp service. I have the code (not yet pushed) for the serice but not yet made API key
 
+  // --- TEMPORARY BYPASS METHOD ---
+  // TODO: Delete this when the real OTP API is active
+  Future<void> updateUserPhone(String newPhone) async {
+    state = const AsyncValue.loading();
+    try {
+      await _repository.updateUser(_getUid(), {'phoneNo': newPhone});
+      await ref.read(authControllerProvider.notifier).refreshUser();
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      rethrow; // Pass the error back to the UI so the spinner stops
+    }
+  }
+
+
   // Document upload functionality
   Future<void> uploadAndSaveDocument(String docType, bool isVehicleDoc) async {
     state = const AsyncValue.loading();

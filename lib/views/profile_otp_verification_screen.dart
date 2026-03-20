@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../services/email_link_auth_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:odogo_app/controllers/user_controller.dart';
+import 'package:odogo_app/services/email_link_auth_service.dart';
 
-class ProfileOtpVerificationScreen extends StatefulWidget {
+class ProfileOtpVerificationScreen extends ConsumerStatefulWidget {
   final String contactInfo; // This will hold the new email or phone number
   final String? verificationEmail;
 
@@ -14,10 +16,10 @@ class ProfileOtpVerificationScreen extends StatefulWidget {
   });
 
   @override
-  State<ProfileOtpVerificationScreen> createState() => _ProfileOtpVerificationScreenState();
+  ConsumerState<ProfileOtpVerificationScreen> createState() => _ProfileOtpVerificationScreenState();
 }
 
-class _ProfileOtpVerificationScreenState extends State<ProfileOtpVerificationScreen> {
+class _ProfileOtpVerificationScreenState extends ConsumerState<ProfileOtpVerificationScreen> {
   final Color odogoGreen = const Color(0xFF66D2A3);
   static const bool _bypassOtpFromEnv = bool.fromEnvironment('BYPASS_OTP', defaultValue: false);
   static const String _debugBypassCode = '0000';
@@ -78,6 +80,18 @@ class _ProfileOtpVerificationScreenState extends State<ProfileOtpVerificationScr
             backgroundColor: Colors.red,
           ),
         );
+        return;
+      }
+      setState(() => _isLoading = true);
+      try {
+        await ref.read(userControllerProvider.notifier).updateUserPhone(widget.contactInfo);
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error updating phone: $e'), backgroundColor: Colors.red),
+          );
+        }
         return;
       }
     }
