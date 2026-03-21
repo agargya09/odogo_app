@@ -270,12 +270,18 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
     final pendingTripsAsync = ref.watch(pendingTripsProvider);
 
     // Extract the list (default to empty if loading/error)
-
-    final List<TripModel> availableTrips = List<TripModel>.from(
-      pendingTripsAsync.value ?? const <TripModel>[],
-    )..sort(
-      (a, b) => _queueTimestampForTrip(a).compareTo(_queueTimestampForTrip(b)),
-    );
+    final List<TripModel> availableTrips =
+        List<TripModel>.from(pendingTripsAsync.value ?? const <TripModel>[])
+            // Filter out rides that already have a driver or are confirmed
+            .where(
+              (trip) =>
+                  trip.driverID == null && trip.status != TripStatus.confirmed,
+            )
+            .toList()
+          ..sort(
+            (a, b) =>
+                _queueTimestampForTrip(a).compareTo(_queueTimestampForTrip(b)),
+          );
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -616,33 +622,48 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
                         child: ListView.separated(
                           shrinkWrap: true,
                           itemCount: incomingTrips.length,
-                          separatorBuilder: (_, __) => const Divider(height: 20),
+                          separatorBuilder: (_, __) =>
+                              const Divider(height: 20),
                           itemBuilder: (context, index) {
                             final incomingTrip = incomingTrips[index];
                             return Column(
                               children: [
-                                if (incomingTrip.status == TripStatus.scheduled && incomingTrip.scheduledTime != null) ...[
+                                if (incomingTrip.status ==
+                                        TripStatus.scheduled &&
+                                    incomingTrip.scheduledTime != null) ...[
                                   Text(
                                     'Scheduled for ${DateFormat("d MMM, h:mm a").format(incomingTrip.scheduledTime!)}',
                                     style: const TextStyle(
                                       color: Colors.red,
-                                      fontWeight: FontWeight.w900, // Extra bold so they don't miss it!
+                                      fontWeight: FontWeight
+                                          .w900, // Extra bold so they don't miss it!
                                       fontSize: 16,
                                     ),
                                   ),
                                   const SizedBox(height: 6),
                                 ],
-                                _buildMapInfoRow('Passenger:', incomingTrip.commuterName),
-                                _buildMapInfoRow('Pickup:', incomingTrip.startLocName),
+                                _buildMapInfoRow(
+                                  'Passenger:',
+                                  incomingTrip.commuterName,
+                                ),
+                                _buildMapInfoRow(
+                                  'Pickup:',
+                                  incomingTrip.startLocName,
+                                ),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Expanded(
-                                      child: _buildMapInfoRow('Drop:', incomingTrip.endLocName),
+                                      child: _buildMapInfoRow(
+                                        'Drop:',
+                                        incomingTrip.endLocName,
+                                      ),
                                     ),
                                     const SizedBox(width: 12),
                                     ElevatedButton(
-                                      onPressed: () => _acceptIncomingTrip(incomingTrip),
+                                      onPressed: () =>
+                                          _acceptIncomingTrip(incomingTrip),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: odogoGreen,
                                         foregroundColor: Colors.black,
@@ -654,7 +675,9 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
                                       ),
                                       child: const Text(
                                         'Accept',
-                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -682,12 +705,14 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
       return;
     }
 
-    await ref.read(tripControllerProvider.notifier).acceptRide(
-      incomingTrip.tripID,
-      currentUserName,
-      currentUserId,
-      isScheduled: incomingTrip.status == TripStatus.scheduled,
-    );
+    await ref
+        .read(tripControllerProvider.notifier)
+        .acceptRide(
+          incomingTrip.tripID,
+          currentUserName,
+          currentUserId,
+          isScheduled: incomingTrip.status == TripStatus.scheduled,
+        );
 
     final controllerState = ref.read(tripControllerProvider);
 
@@ -719,9 +744,8 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => DriverActivePickupScreen(
-          tripID: incomingTrip.tripID,
-        ),
+        builder: (context) =>
+            DriverActivePickupScreen(tripID: incomingTrip.tripID),
       ),
     );
   }
@@ -750,7 +774,7 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
                 fontSize: 16,
               ),
             ),
-          )
+          ),
         ],
       ),
     );
